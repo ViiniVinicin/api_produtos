@@ -15,23 +15,23 @@ public class ProductRepository {
     private final List<Product> productList = new ArrayList<>();
     private final AtomicLong idCounter = new AtomicLong();
 
-    public List<Product> findAllProducts() {
+    public List<Product> findAll() {
         return new ArrayList<>(productList);
     }
 
-    public Optional<Product> findProductById(Long id) {
+    public Optional<Product> findById(Long id) {
         return productList.stream()
                 .filter(product -> product.getId().equals(id))
                 .findFirst();
     }
 
-    public Product saveProduct(Product product) {
+    public Product save(Product product) {
         if (product.getId() == null) {
             product.setId(idCounter.incrementAndGet());
             productList.add(product);
             return product;
         } else {
-            findProductById(product.getId()).ifPresent(existingProduct -> {
+            findById(product.getId()).ifPresent(existingProduct -> {
                 productList.remove(existingProduct);
                 productList.add(product);
             });
@@ -39,10 +39,7 @@ public class ProductRepository {
         }
     }
 
-    /**
-     * Deleta um produto pelo seu ID.
-     */
-    public void deleteProductById(Long id) {
+    public void deleteById(Long id) {
         productList.removeIf(product -> product.getId().equals(id));
     }
 }

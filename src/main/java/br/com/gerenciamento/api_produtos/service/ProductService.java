@@ -9,7 +9,6 @@ import br.com.gerenciamento.api_produtos.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -21,46 +20,42 @@ public class ProductService {
     }
 
     public List<ProductResponseDTO> getAllProducts() {
-
-        List<Product> allProducts = productRepository.findAllProducts();
-
-        return allProducts.stream()
+        // Usando o nome padrão do repositório
+        return productRepository.findAll()
+                .stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     public ProductResponseDTO getProductById(Long id) {
-        return productRepository.findProductById(id)
-                .map(this::toResponseDTO)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
+        return toResponseDTO(product);
     }
 
     public ProductResponseDTO createProduct(ProductCreateDTO createDTO) {
         Product newProduct = new Product();
         mapDtoToEntity(newProduct, createDTO);
 
-        Product savedProduct = productRepository.saveProduct(newProduct);
+        Product savedProduct = productRepository.save(newProduct);
         return toResponseDTO(savedProduct);
     }
 
     public ProductResponseDTO updateProduct(Long id, ProductUpdateDTO updateDTO) {
-        Product existingProduct = findProductById(id);
+        Product existingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
 
         mapDtoToEntity(existingProduct, updateDTO);
 
-        Product updatedProduct = productRepository.saveProduct(existingProduct);
+        Product updatedProduct = productRepository.save(existingProduct);
         return toResponseDTO(updatedProduct);
     }
 
     public void deleteProduct(Long id) {
-
-        findProductById(id);
-        productRepository.deleteProductById(id);
-    }
-
-    private Product findProductById(Long id) {
-        return productRepository.findProductById(id)
+        productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
+
+        productRepository.deleteById(id);
     }
 
     private ProductResponseDTO toResponseDTO(Product product) {
@@ -73,19 +68,20 @@ public class ProductService {
         );
     }
 
-    private void mapDtoToEntity(Product product, ProductCreateDTO createDTO) {
-        product.setProductName(createDTO.productName());
-        product.setProductPrice(createDTO.productPrice());
-        product.setProductCategory(createDTO.productCategory());
-        product.setProductDescription(createDTO.productDescription());
-        product.setProductStockQuantity(createDTO.productStockQuantity());
+    // Métodos de mapeamento unificados pelo mesmo nome (sobrecarga)
+    private void mapDtoToEntity(Product product, ProductCreateDTO dto) {
+        product.setProductName(dto.productName());
+        product.setProductDescription(dto.productDescription());
+        product.setProductCategory(dto.productCategory());
+        product.setProductPrice(dto.productPrice());
+        product.setProductStockQuantity(dto.productStockQuantity());
     }
 
-    private void mapDtoToEntity(Product product, ProductUpdateDTO updateDTO) {
-        product.setProductName(updateDTO.productName());
-        product.setProductPrice(updateDTO.productPrice());
-        product.setProductCategory(updateDTO.productCategory());
-        product.setProductDescription(updateDTO.productDescription());
-        product.setProductStockQuantity(updateDTO.productStockQuantity());
+    private void mapDtoToEntity(Product product, ProductUpdateDTO dto) {
+        product.setProductName(dto.productName());
+        product.setProductDescription(dto.productDescription());
+        product.setProductCategory(dto.productCategory());
+        product.setProductPrice(dto.productPrice());
+        product.setProductStockQuantity(dto.productStockQuantity());
     }
 }
