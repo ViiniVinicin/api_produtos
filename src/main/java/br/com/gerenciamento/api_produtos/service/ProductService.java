@@ -6,6 +6,7 @@ import br.com.gerenciamento.api_produtos.dto.ProductUpdateDTO;
 import br.com.gerenciamento.api_produtos.exception.ResourceNotFoundException;
 import br.com.gerenciamento.api_produtos.model.Product;
 import br.com.gerenciamento.api_produtos.repository.ProductRepository;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class ProductService {
         return toResponseDTO(savedProduct);
     }
 
-    public ProductResponseDTO updateProduct(Long id, ProductUpdateDTO updateDTO) {
+    public ProductResponseDTO updateProduct(Long id, @Valid ProductCreateDTO updateDTO) {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
 
